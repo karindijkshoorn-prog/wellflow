@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wellflow</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --berry:#7B3F5E;--berry-mid:#A05878;--berry-light:#F2E8ED;
+  --taupe:#C4B8AE;--taupe-light:#EDE8E3;--cream:#F8F5F0;--white:#FFFFFF;
+  --text:#1E1714;--text-mid:#5C4A44;--text-soft:#9C8880;
+  --gold:#C4965A;--radius:14px;--radius-sm:8px;--radius-pill:100px;
+  --shadow:0 2px 16px rgba(123,63,94,0.08);
+}
+body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;}
+.layout{display:grid;grid-template-columns:340px 1fr;min-height:100vh;}
+.sidebar{background:#ffffff;padding:1.75rem;border-right:1px solid var(--taupe-light);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.main{padding:2rem 2rem 4rem;background:var(--cream);overflow-y:auto;}
+.brand-name{font-family:'Cormorant Garamond',serif;font-size:1.75rem;font-weight:400;color:#111111;letter-spacing:0.02em;line-height:1;margin-bottom:4px;}
+.brand-name em{font-style:italic;color:var(--berry);}
+.brand-sub{font-size:11px;color:var(--text-soft);letter-spacing:0.1em;text-transform:uppercase;font-weight:300;}
+.brand{margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid var(--taupe-light);}
+.section-label{font-size:10px;color:var(--text-soft);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;font-weight:400;}
+.upload-zone{border:1.5px dashed var(--taupe);border-radius:var(--radius);padding:1.25rem;text-align:center;margin-bottom:1.25rem;background:var(--cream);}
+.upload-zone.has-media{border-style:solid;padding:0.75rem;}
+.upload-icon{width:32px;height:32px;background:var(--taupe-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;}
+.upload-icon svg{width:16px;height:16px;fill:var(--text-soft);}
+.upload-title{font-size:13px;color:var(--text-mid);margin-bottom:4px;}
+.upload-sub{font-size:11px;color:var(--text-soft);}
+.choose-label{display:inline-block;margin-top:10px;padding:7px 18px;background:var(--berry);color:white;border-radius:var(--radius-pill);font-size:12px;cursor:pointer;font-family:'Jost',sans-serif;font-weight:500;}
+.preview-wrap{position:relative;}
+.preview-img{width:100%;max-height:130px;object-fit:cover;border-radius:var(--radius-sm);display:block;}
+.preview-remove{position:absolute;top:6px;right:6px;width:22px;height:22px;background:rgba(0,0,0,0.6);border:none;border-radius:50%;color:white;font-size:12px;cursor:pointer;}
+.analysing{font-size:11px;color:var(--text-soft);margin-top:6px;font-style:italic;}
+.auto-badge{font-size:10px;color:#166534;margin-left:6px;}
+.platform-group{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.25rem;}
+.platform-pill{padding:5px 12px;border:1px solid var(--taupe);border-radius:var(--radius-pill);font-size:11px;color:var(--text-soft);cursor:pointer;background:transparent;font-family:'Jost',sans-serif;transition:all 0.15s;}
+.platform-pill.active{background:var(--berry-light);border-color:var(--berry-mid);color:var(--berry);}
+.field{margin-bottom:12px;}
+label{display:block;font-size:11px;color:var(--text-soft);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px;}
+select,textarea,input[type=text]{width:100%;background:var(--cream);border:1px solid var(--taupe-light);border-radius:var(--radius-sm);padding:9px 12px;font-size:13px;font-family:'Jost',sans-serif;color:var(--text);appearance:none;}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239C8880'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-color:var(--cream);padding-right:28px;cursor:pointer;}
+textarea{resize:vertical;min-height:60px;line-height:1.55;}
+select:focus,textarea:focus,input:focus{outline:none;border-color:var(--berry-mid);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.generate-btn{width:100%;padding:12px;background:var(--berry);color:white;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;font-family:'Jost',sans-serif;cursor:pointer;margin-top:6px;transition:all 0.15s;}
+.generate-btn:hover{background:var(--berry-mid);}
+.generate-btn:disabled{background:var(--taupe);cursor:not-allowed;}
+.main-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:400;color:var(--text);margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--taupe-light);}
+.main-title em{font-style:italic;color:var(--berry-mid);}
+.tabs{display:flex;margin-bottom:1.5rem;border-bottom:1px solid var(--taupe-light);}
+.tab{padding:8px 18px;font-size:12px;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-soft);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;font-family:'Jost',sans-serif;}
+.tab.active{color:var(--berry);border-bottom-color:var(--berry);}
+.empty{text-align:center;padding:4rem 2rem;color:var(--text-soft);}
+.empty-icon{width:48px;height:48px;background:var(--berry-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;}
+.empty-icon svg{width:20px;height:20px;fill:var(--berry-mid);}
+.empty h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:400;margin-bottom:6px;color:var(--text-mid);}
+.empty p{font-size:13px;line-height:1.6;max-width:280px;margin:0 auto;}
+.loading{text-align:center;padding:3rem;color:var(--text-soft);}
+.spinner{width:28px;height:28px;border:2px solid var(--taupe-light);border-top-color:var(--berry-mid);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 1rem;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.results-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.results-label{font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-soft);}
+.caption-card{background:var(--white);border:1px solid var(--taupe-light);border-radius:var(--radius);padding:1.5rem;margin-bottom:14px;box-shadow:var(--shadow);}
+.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.badge-num{width:22px;height:22px;background:var(--berry-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--berry);}
+.badge-plat{font-size:11px;color:var(--text-soft);margin-left:6px;}
+.hook-text{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:500;line-height:1.4;color:var(--text);margin-bottom:10px;}
+.body-text{font-size:13px;color:var(--text-mid);line-height:1.75;white-space:pre-wrap;margin-bottom:10px;}
+.cta-text{font-size:13px;color:var(--berry-mid);font-style:italic;margin-bottom:12px;}
+.hashtag-row{padding-top:10px;border-top:1px solid var(--taupe-light);font-size:12px;color:var(--gold);line-height:1.9;margin-bottom:10px;}
+.copy-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border:1px solid var(--taupe);border-radius:var(--radius-pill);font-size:11px;font-family:'Jost',sans-serif;color:var(--text-mid);background:transparent;cursor:pointer;}
+.copy-btn:hover{border-color:var(--berry-mid);color:var(--berry);}
+.error-box{background:#FEF2F2;border:1px solid #FCA5A5;border-radius:var(--radius-sm);padding:14px 16px;font-size:13px;color:#991B1B;line-height:1.6;}
+.vision-note{background:var(--berry-light);border:1px solid #DFC0CC;border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--berry);line-height:1.6;margin-bottom:1rem;}
+[contenteditable]{outline:none;border-radius:4px;cursor:text;}
+[contenteditable]:hover{background:var(--berry-light);}
+[contenteditable]:focus{background:var(--berry-light);box-shadow:0 0 0 2px var(--berry-mid);padding:2px 4px;margin:-2px -4px;}
+.edit-hint{font-size:10px;color:var(--text-soft);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:8px;opacity:0.6;}
+.repurpose-wrap{margin-top:10px;padding-top:10px;border-top:1px solid var(--taupe-light);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.repurpose-label{font-size:11px;color:var(--text-soft);}
+.repurpose-pill{padding:4px 10px;border:1px solid var(--taupe);border-radius:var(--radius-pill);font-size:11px;font-family:'Jost',sans-serif;color:var(--text-soft);background:transparent;cursor:pointer;transition:all 0.12s;}
+.repurpose-pill:hover{border-color:var(--berry-mid);color:var(--berry);background:var(--berry-light);}
+.repurpose-pill:disabled{opacity:0.4;cursor:not-allowed;}
+@media(max-width:720px){.layout{grid-template-columns:1fr;}.sidebar{position:static;height:auto;}.main{padding:1.5rem 1rem 3rem;}}
+</style>
+</head>
+<body>
+
+<input type="file" id="mediaInput" accept="image/*,video/*" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" onchange="handleMedia(this.files[0])" />
+
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">well<em>flow</em></div>
+    <div class="brand-sub">Social caption studio</div>
+  </div>
+
+  <div class="section-label">Upload image or video</div>
+  <div class="upload-zone" id="uploadZone">
+    <div id="uploadDefault">
+      <div class="upload-icon"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></div>
+      <div class="upload-title">Upload an image or video</div>
+      <div class="upload-sub">The tool will analyse it and auto-fill your topic</div>
+      <label for="mediaInput" class="choose-label">Choose file</label>
+    </div>
+    <div id="uploadPreview" style="display:none;">
+      <div class="preview-wrap">
+        <img id="previewImg" class="preview-img" src="" alt="Preview" />
+        <button class="preview-remove" onclick="removeMedia(event)">x</button>
+      </div>
+      <div class="analysing" id="analysingBadge" style="display:none;">Analysing your content...</div>
+    </div>
+  </div>
+
+  <div class="section-label">Platform</div>
+  <div class="platform-group" id="platforms">
+    <button class="platform-pill active" data-platform="Instagram">Instagram</button>
+    <button class="platform-pill" data-platform="Facebook">Facebook</button>
+    <button class="platform-pill" data-platform="LinkedIn">LinkedIn</button>
+    <button class="platform-pill" data-platform="Threads">Threads</button>
+  </div>
+
+  <div class="section-label">Post details</div>
+  <div class="row2">
+    <div class="field">
+      <label>Modality</label>
+      <select id="modality">
+        <option value="Pilates">Pilates</option>
+        <option value="yoga">Yoga</option>
+        <option value="breathwork">Breathwork</option>
+        <option value="mindfulness coaching">Mindfulness</option>
+        <option value="somatic movement">Somatic</option>
+        <option value="meditation">Meditation</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Post type</label>
+      <select id="post_type">
+        <option value="reel caption">Reel</option>
+        <option value="carousel intro">Carousel</option>
+        <option value="quote post">Quote post</option>
+        <option value="offer or programme post">Offer</option>
+        <option value="teaching tip">Tip post</option>
+        <option value="behind the scenes post">Behind scenes</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>What is this post about? <span class="auto-badge" id="topicAutoBadge"></span></label>
+    <textarea id="topic" placeholder="Describe your post, or upload media to auto-fill..."></textarea>
+  </div>
+
+  <div class="row2">
+    <div class="field">
+      <label>Audience</label>
+      <select id="audience">
+        <option value="complete beginners">Beginners</option>
+        <option value="regular practitioners">Regulars</option>
+        <option value="trainee teachers">Trainees</option>
+        <option value="burned-out professionals">Burned-out pros</option>
+        <option value="postpartum clients">Postpartum</option>
+        <option value="midlife women">Midlife women</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Tone</label>
+      <select id="tone">
+        <option value="warm and encouraging">Warm</option>
+        <option value="direct and honest">Direct</option>
+        <option value="educational">Educational</option>
+        <option value="conversational">Conversational</option>
+        <option value="quietly inspiring">Inspiring</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Business name (optional)</label>
+    <input type="text" id="clientName" placeholder="e.g. Pilates Ireland..." />
+  </div>
+  <div class="field">
+    <label>Keywords (optional)</label>
+    <input type="text" id="keywords" placeholder="e.g. reformer, breath..." />
+  </div>
+  <div class="field">
+    <label>Anything to avoid?</label>
+    <input type="text" id="avoid" placeholder="e.g. weight loss language..." />
+  </div>
+
+  <button class="generate-btn" id="genBtn" onclick="generate()">Generate 3 captions</button>
+</aside>
+
+<main class="main">
+  <div class="main-title">Your <em>captions</em></div>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('generated',this)">Generated</button>
+    <button class="tab" onclick="showTab('saved',this)">Saved</button>
+  </div>
+  <div id="generatedPanel">
+    <div class="empty" id="emptyState">
+      <div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div>
+      <h3>Ready when you are</h3>
+      <p>Upload an image or video, fill in a few details, and hit generate.</p>
+    </div>
+    <div id="output"></div>
+  </div>
+  <div id="savedPanel" style="display:none;"><div id="savedOutput"></div></div>
+</main>
+</div>
+
+<script>
+var activePlatform = 'Instagram';
+var mediaBase64 = null;
+var mediaType = null;
+var isAnalysing = false;
+var saved = JSON.parse(localStorage.getItem('wf_saved') || '[]');
+var currentCaptions = [];
+
+window.onload = function() {
+  updateSavedCount();
+  document.querySelectorAll('.platform-pill').forEach(function(p) {
+    p.addEventListener('click', function() {
+      document.querySelectorAll('.platform-pill').forEach(function(x) { x.classList.remove('active'); });
+      p.classList.add('active');
+      activePlatform = p.dataset.platform;
+    });
+  });
+  var zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', function(e) { e.preventDefault(); });
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    if (e.dataTransfer.files[0]) handleMedia(e.dataTransfer.files[0]);
+  });
+};
+
+function updateSavedCount() {
+  var el = document.getElementById('savedCount');
+  if (el) el.innerHTML = saved.length > 0 ? '<strong style="color:var(--berry)">' + saved.length + '</strong> saved' : '';
+}
+
+function handleMedia(file) {
+  if (!file) return;
+  var isVideo = file.type.startsWith('video/');
+  var zone = document.getElementById('uploadZone');
+  zone.classList.add('has-media');
+  document.getElementById('uploadDefault').style.display = 'none';
+  document.getElementById('uploadPreview').style.display = 'block';
+
+  if (isVideo) {
+    var url = URL.createObjectURL(file);
+    var video = document.createElement('video');
+    video.src = url;
+    video.muted = true;
+    video.addEventListener('loadeddata', function() { video.currentTime = 1.0; });
+    video.addEventListener('seeked', function() {
+      setTimeout(function() {
+        var canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 360;
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        document.getElementById('previewImg').src = dataUrl;
+        mediaBase64 = dataUrl.split(',')[1];
+        mediaType = 'image/jpeg';
+        URL.revokeObjectURL(url);
+        analyseMedia();
+      }, 200);
+    });
+    video.load();
+  } else {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('previewImg').src = e.target.result;
+      mediaBase64 = e.target.result.split(',')[1];
+      mediaType = file.type;
+      analyseMedia();
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function analyseMedia() {
+  if (!mediaBase64) return;
+  var badge = document.getElementById('analysingBadge');
+  var topicField = document.getElementById('topic');
+  var autoBadge = document.getElementById('topicAutoBadge');
+  var genBtn = document.getElementById('genBtn');
+  isAnalysing = true;
+  genBtn.disabled = true;
+  genBtn.textContent = 'Analysing...';
+  badge.style.display = 'block';
+
+  fetch('/api/analyse', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image: mediaBase64, mediaType: mediaType })
+  }).then(function(res) {
+    return res.json();
+  }).then(function(data) {
+    if (data.description && !topicField.value.trim()) {
+      topicField.value = data.description;
+      autoBadge.textContent = 'auto-filled';
+    }
+  }).catch(function(e) {
+    console.log('Analyse error:', e);
+  }).finally(function() {
+    badge.style.display = 'none';
+    isAnalysing = false;
+    genBtn.disabled = false;
+    genBtn.textContent = 'Generate 3 captions';
+  });
+}
+
+function removeMedia(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  mediaBase64 = null;
+  mediaType = null;
+  document.getElementById('uploadZone').classList.remove('has-media');
+  document.getElementById('uploadDefault').style.display = 'block';
+  document.getElementById('uploadPreview').style.display = 'none';
+  document.getElementById('previewImg').src = '';
+  document.getElementById('mediaInput').value = '';
+  document.getElementById('topicAutoBadge').textContent = '';
+}
+
+function showTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('generatedPanel').style.display = tab === 'generated' ? 'block' : 'none';
+  document.getElementById('savedPanel').style.display = tab === 'saved' ? 'block' : 'none';
+  if (tab === 'saved') renderSaved();
+}
+
+function generate() {
+  var topic = document.getElementById('topic').value.trim();
+  var modality = document.getElementById('modality').value;
+  var postType = document.getElementById('post_type').value;
+  var audience = document.getElementById('audience').value;
+  var tone = document.getElementById('tone').value;
+  var clientName = document.getElementById('clientName').value.trim();
+  var keywords = document.getElementById('keywords').value.trim();
+  var avoid = document.getElementById('avoid').value.trim();
+  var btn = document.getElementById('genBtn');
+  var out = document.getElementById('output');
+  var empty = document.getElementById('emptyState');
+
+  if (!topic && !mediaBase64) {
+    empty.style.display = 'none';
+    out.innerHTML = '<div class="error-box">Please upload an image or describe what your post is about.</div>';
+    return;
+  }
+
+  btn.disabled = true;
+  empty.style.display = 'none';
+  out.innerHTML = '<div class="loading"><div class="spinner"></div>Writing your captions...</div>';
+
+  fetch('/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      topic: topic,
+      modality: modality,
+      postType: postType,
+      audience: audience,
+      tone: tone,
+      platform: activePlatform,
+      clientName: clientName,
+      keywords: keywords,
+      avoid: avoid,
+      image: mediaBase64,
+      mediaType: mediaType
+    })
+  }).then(function(res) {
+    if (!res.ok) return res.json().then(function(e) { throw new Error(e.error || 'Server error'); });
+    return res.json();
+  }).then(function(parsed) {
+    if (!parsed || !parsed.captions) throw new Error('Invalid response from server');
+    currentCaptions = parsed.captions.map(function(c, i) {
+      return Object.assign({}, c, {
+        id: Date.now() + i,
+        platform: activePlatform,
+        thumbSrc: mediaBase64 ? document.getElementById('previewImg').src : null
+      });
+    });
+    var html = '';
+    if (mediaBase64) html += '<div class="vision-note"><strong>Visual analysis active</strong> — captions written based on your uploaded content.</div>';
+    html += renderCards(currentCaptions, false);
+    out.innerHTML = html;
+  }).catch(function(e) {
+    out.innerHTML = '<div class="error-box"><strong>Something went wrong:</strong> ' + e.message + '</div>';
+  }).finally(function() {
+    btn.disabled = false;
+    btn.textContent = 'Generate 3 captions';
+  });
+}
+
+function renderCards(captions, isSaved) {
+  var meta = '<div class="results-meta"><div class="results-label">' + captions.length + ' captions ' + (isSaved ? 'saved' : 'generated') + '</div></div>';
+  var cards = captions.map(function(c, i) {
+    var isSavedCard = saved.some(function(s) { return s.id === c.id; });
+    var fullText = c.hook + '\n\n' + c.body + '\n\n' + c.cta + '\n\n' + c.hashtags.join(' ');
+    window['_cap_' + c.id] = fullText;
+    var platforms = ['Instagram','Facebook','LinkedIn','Threads'].filter(function(p) { return p !== (c.platform || activePlatform); });
+    var repurposeBtns = platforms.map(function(p) {
+      return '<button class="repurpose-pill" onclick="repurpose(' + c.id + ','' + p + '',this)">' + p + '</button>';
+    }).join('');
+    return '<div class="caption-card" id="card_' + c.id + '">' +
+      '<div class="card-top"><div style="display:flex;align-items:center;"><div class="badge-num">' + (i+1) + '</div><span class="badge-plat">' + (c.platform || activePlatform) + '</span></div>' +
+      '<button class="copy-btn" id="copybtn_' + c.id + '" onclick="copyCaption(' + c.id + ')">Copy</button></div>' +
+      (c.thumbSrc ? '<img style="width:100%;max-height:110px;object-fit:cover;border-radius:8px;margin-bottom:12px;" src="' + c.thumbSrc + '" alt="" />' : '') +
+      '<div class="edit-hint">Click any text to edit</div>' +
+      '<div class="hook-text" contenteditable="true" id="hook_' + c.id + '">' + esc(c.hook) + '</div>' +
+      '<div class="body-text" contenteditable="true" id="body_' + c.id + '">' + esc(c.body) + '</div>' +
+      '<div class="cta-text" contenteditable="true" id="cta_' + c.id + '">' + esc(c.cta) + '</div>' +
+      '<div class="hashtag-row" contenteditable="true" id="tags_' + c.id + '">' + c.hashtags.join(' ') + '</div>' +
+      '<div class="repurpose-wrap"><span class="repurpose-label">Repurpose for:</span>' + repurposeBtns + '</div>' +
+      '</div>';
+  }).join('');
+  return meta + cards;
+}
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function copyCaption(id) {
+  var hook = document.getElementById('hook_' + id);
+  var body = document.getElementById('body_' + id);
+  var cta = document.getElementById('cta_' + id);
+  var tags = document.getElementById('tags_' + id);
+  var text = hook && body && cta && tags
+    ? [hook.innerText, body.innerText, cta.innerText, tags.innerText].join('\n\n')
+    : window['_cap_' + id];
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.getElementById('copybtn_' + id);
+    if (btn) {
+      btn.textContent = 'Copied';
+      setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+    }
+  });
+}
+
+function toggleSave(id) {
+  var caption = currentCaptions.find(function(c) { return c.id === id; }) || saved.find(function(c) { return c.id === id; });
+  if (!caption) return;
+  var idx = saved.findIndex(function(s) { return s.id === id; });
+  if (idx > -1) saved.splice(idx, 1); else saved.push(caption);
+  localStorage.setItem('wf_saved', JSON.stringify(saved));
+  updateSavedCount();
+}
+
+function renderSaved() {
+  var out = document.getElementById('savedOutput');
+  if (!saved.length) {
+    out.innerHTML = '<div class="empty"><h3>Nothing saved yet</h3><p>Copy a caption you like to save it here.</p></div>';
+    return;
+  }
+  saved.forEach(function(c) { window['_cap_' + c.id] = c.hook + '\n\n' + c.body + '\n\n' + c.cta + '\n\n' + c.hashtags.join(' '); });
+  out.innerHTML = renderCards(saved, true);
+}
+
+function repurpose(id, targetPlatform, btn) {
+  var caption = currentCaptions.find(function(c) { return c.id === id; }) || saved.find(function(c) { return c.id === id; });
+  if (!caption) return;
+  var wrap = document.getElementById('repurpose_' + id);
+  btn.disabled = true;
+  btn.textContent = 'Writing...';
+
+  fetch('/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      topic: caption.hook + ' ' + caption.body,
+      modality: document.getElementById('modality').value,
+      postType: targetPlatform + ' post',
+      audience: document.getElementById('audience').value,
+      tone: document.getElementById('tone').value,
+      platform: targetPlatform
+    })
+  }).then(function(res) { return res.json(); })
+  .then(function(data) {
+    var parsed = data.captions ? data.captions[0] : null;
+    if (!parsed) throw new Error('No captions returned');
+    var newCaption = Object.assign({}, parsed, { id: Date.now(), platform: targetPlatform, thumbSrc: caption.thumbSrc });
+    currentCaptions.push(newCaption);
+    window['_cap_' + newCaption.id] = newCaption.hook + '\n\n' + newCaption.body + '\n\n' + newCaption.cta + '\n\n' + newCaption.hashtags.join(' ');
+    var existingCard = document.getElementById('card_' + id);
+    var newHtml = '<div class="caption-card" id="card_' + newCaption.id + '" style="border-left:3px solid var(--berry-mid);">' +
+      '<div class="card-top"><div style="display:flex;align-items:center;"><div class="badge-num">R</div><span class="badge-plat">' + targetPlatform + ' repurposed</span></div>' +
+      '<button class="copy-btn" id="copybtn_' + newCaption.id + '" onclick="copyCaption(' + newCaption.id + ')">Copy</button></div>' +
+      '<div class="hook-text" contenteditable="true" id="hook_' + newCaption.id + '">' + esc(newCaption.hook) + '</div>' +
+      '<div class="body-text" contenteditable="true" id="body_' + newCaption.id + '">' + esc(newCaption.body) + '</div>' +
+      '<div class="cta-text" contenteditable="true" id="cta_' + newCaption.id + '">' + esc(newCaption.cta) + '</div>' +
+      '<div class="hashtag-row" contenteditable="true" id="tags_' + newCaption.id + '">' + newCaption.hashtags.join(' ') + '</div>' +
+      '</div>';
+    existingCard.insertAdjacentHTML('afterend', newHtml);
+  }).catch(function(e) {
+    btn.textContent = 'Failed';
+  }).finally(function() {
+    btn.disabled = false;
+    btn.textContent = targetPlatform;
+  });
+}
+</script>
+</body>
+</html>
