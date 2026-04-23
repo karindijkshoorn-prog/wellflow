@@ -62,6 +62,14 @@ exports.handler = async (event) => {
       res.on('end', () => {
         try {
           const parsed = JSON.parse(data);
+          if (parsed.error) {
+            resolve({
+              statusCode: 500,
+              headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+              body: JSON.stringify({ error: parsed.error.message || JSON.stringify(parsed.error) })
+            });
+            return;
+          }
           const description = parsed.content.filter(b => b.type === 'text').map(b => b.text).join('').trim();
           resolve({
             statusCode: 200,
@@ -72,7 +80,7 @@ exports.handler = async (event) => {
           resolve({
             statusCode: 500,
             headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-            body: JSON.stringify({ error: 'Analysis failed.' })
+            body: JSON.stringify({ error: 'Analysis failed: ' + e.message + ' Raw: ' + data.substring(0, 200) })
           });
         }
       });
