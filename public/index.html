@@ -407,7 +407,7 @@ function renderCards(captions, isSaved) {
     window['_cap_' + c.id] = fullText;
     var platforms = ['Instagram','Facebook','LinkedIn','Threads'].filter(function(p) { return p !== (c.platform || activePlatform); });
     var repurposeBtns = platforms.map(function(p) {
-      return '<button class="repurpose-pill" onclick="repurpose(' + c.id + ',&quot;' + p + '&quot;,this)">' + p + '</button>';
+      return '<button class="repurpose-pill" onclick="repurpose(' + c.id + ','' + p + '',this)">' + p + '</button>';
     }).join('');
     return '<div class="caption-card" id="card_' + c.id + '">' +
       '<div class="card-top"><div style="display:flex;align-items:center;"><div class="badge-num">' + (i+1) + '</div><span class="badge-plat">' + (c.platform || activePlatform) + '</span></div>' +
