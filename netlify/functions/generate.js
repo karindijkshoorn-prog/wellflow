@@ -33,10 +33,10 @@ exports.handler = async (event) => {
   const { topic, modality, postType, audience, tone, platform, clientName, keywords, avoid, image, mediaType } = body;
 
   const platformGuidance = {
-    Instagram: 'Instagram: hook grabs in 1-2 lines, body 80-150 words, 5-8 hashtags',
-    Facebook: 'Facebook: slightly longer and more conversational, warmer community feel, 2-3 hashtags max',
-    LinkedIn: 'LinkedIn: professional but human, 100-180 words, 3-5 hashtags, no salesy tone',
-    Threads: 'Threads: short and punchy, under 80 words, 1-3 hashtags, conversational'
+    Instagram: 'Instagram: hook grabs in 1-2 lines, body 150-220 words, 3-5 targeted hashtags only',
+    Facebook: 'Facebook: conversational and warm, 180-250 words, 3-5 hashtags',
+    LinkedIn: 'LinkedIn: professional but human, 200-280 words, 5-8 hashtags, no salesy tone',
+    Threads: 'Threads: punchy but not too short, 80-120 words, 3-5 hashtags, conversational'
   };
 
   const extras = [];
@@ -77,7 +77,7 @@ Return ONLY a valid JSON object. No markdown, no backticks, no explanation. Exac
 
   const payload = JSON.stringify({
     model: 'claude-opus-4-5',
-    max_tokens: 2000,
+    max_tokens: 3000,
     messages: [{ role: 'user', content: userContent }]
   });
 
